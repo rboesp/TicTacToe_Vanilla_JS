@@ -1,0 +1,23 @@
+body {
+    display: flex;
+    justify-content: center;
+}
+main {
+    min-height: 100vh; // height of the browser viewport
+    display: flex;
+    align-items: center;
+}
+#board {
+    height: 300px;
+    width: 300px;
+    background-color: gray;
+    display: flex;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+}
+.tactoes {
+    height: 32.6%;
+    width: 32.6%;
+    text-align: center;
+    border: 1px solid black;
+}
