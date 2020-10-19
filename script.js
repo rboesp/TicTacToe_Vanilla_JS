@@ -38,7 +38,7 @@ const board = document.querySelector('#board')
 let currentPlayer = 0
 
 //FUNCTIONS
-function mark(tile, color) {
+function markTile(tile, color) {
     tile.setAttribute('style', `background-color: ${color};`)
 }
 
@@ -47,13 +47,14 @@ function nextPlayer() {
 }
 
 function handleClick(e) {
-    if(!e.target.tagName === 'DIV') return
+    if(e.target.className !== 'tiles') return
     const tileState = tileStates[e.target.id]
-    if(!tileState.take()) return
+    const takenTile = tileState.take()
+    if(!takenTile) return
     let player = nextPlayer()
     console.log(player);
     console.log(tileState);
-    mark(e.target, players[player].color)
+    markTile(e.target, players[player].color)
 }
 
 //EVENTS
