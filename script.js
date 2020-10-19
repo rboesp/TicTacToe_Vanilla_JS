@@ -5,7 +5,11 @@ class Tile {
         this.taken = false;
     }
     take() {
-        this.taken = true;
+        if(!this.isTaken()){
+            this.taken = true
+            return true
+        }
+        return false
     }
     isTaken() {
         return this.taken
@@ -24,20 +28,34 @@ const tileStates = {
     8: new Tile(2,2)
 }
 
-console.log(tileStates);
+const players = [{
+    color: 'red'
+}, {
+    color: 'blue'
+}]
 
 
 //find board
 const board = document.querySelector('#board')
+let currentPlayer = 0
+
+//functions
+function mark(tile, color) {
+    tile.setAttribute('style', `background-color: ${color};`)
+}
+
+function nextPlayer() {
+    return Number(currentPlayer = !currentPlayer)
+}
 
 //loop
-let count = 0
+let counter = 0
 for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
         //make element
         const div = document.createElement("DIV")
         div.setAttribute("class", "tiles")
-        div.setAttribute("id", `${count++}`)
+        div.setAttribute("id", `${counter++}`)
 
         const h1 = document.createElement('H1')
         div.appendChild(h1)
@@ -47,10 +65,14 @@ for (let i = 0; i < 3; i++) {
 
 //events
 document.addEventListener('click', (e) => {
-    console.log(e.target.tagName);
     if(e.target.tagName === 'DIV') {
-        console.log(numberMapping[e.target.id])
-
+        const tileState = tileStates[e.target.id]
+        if(tileState.take()){
+            let player = nextPlayer()
+            console.log(player);
+            console.log(tileState);
+            mark(e.target, players[player].color)
+        }
     }
     
 })
