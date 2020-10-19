@@ -67,12 +67,11 @@ for (let i = 0; i < 3; i++) {
 document.addEventListener('click', (e) => {
     if(e.target.tagName === 'DIV') {
         const tileState = tileStates[e.target.id]
-        if(tileState.take()){
-            let player = nextPlayer()
-            console.log(player);
-            console.log(tileState);
-            mark(e.target, players[player].color)
-        }
+        if(!tileState.take()) return
+        let player = nextPlayer()
+        console.log(player);
+        console.log(tileState);
+        mark(e.target, players[player].color)
     }
     
 })
