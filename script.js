@@ -34,12 +34,10 @@ const players = [{
     color: 'blue'
 }]
 
-
-//find board
 const board = document.querySelector('#board')
 let currentPlayer = 0
 
-//functions
+//FUNCTIONS
 function mark(tile, color) {
     tile.setAttribute('style', `background-color: ${color};`)
 }
@@ -48,30 +46,41 @@ function nextPlayer() {
     return Number(currentPlayer = !currentPlayer)
 }
 
-//loop
+function handleClick(e) {
+    if(!e.target.tagName === 'DIV') return
+    const tileState = tileStates[e.target.id]
+    if(!tileState.take()) return
+    let player = nextPlayer()
+    console.log(player);
+    console.log(tileState);
+    mark(e.target, players[player].color)
+}
+
+//EVENTS
+document.addEventListener('click', handleClick)
+
+
+/*
+THOUGHTS:
+Use paths to win, if two players have same path to win then delete it
+to detect three in a row, think about filling up path to win, when filled p then player that filled it up wins
+*/
+
+
+//ENTRY POINT
+
+//make board
 let counter = 0
 for (let i = 0; i < 3; i++) {
     for (let j = 0; j < 3; j++) {
-        //make element
+        //make tile
         const div = document.createElement("DIV")
         div.setAttribute("class", "tiles")
         div.setAttribute("id", `${counter++}`)
 
         const h1 = document.createElement('H1')
+        h1.textContent = `${i+1},${j+1}`
         div.appendChild(h1)
         board.appendChild(div)
     }
 }
-
-//events
-document.addEventListener('click', (e) => {
-    if(e.target.tagName === 'DIV') {
-        const tileState = tileStates[e.target.id]
-        if(!tileState.take()) return
-        let player = nextPlayer()
-        console.log(player);
-        console.log(tileState);
-        mark(e.target, players[player].color)
-    }
-    
-})
