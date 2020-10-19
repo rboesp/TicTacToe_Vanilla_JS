@@ -1,6 +1,7 @@
 body {
     display: flex;
     justify-content: center;
+    background-color: gray;
 }
 main {
     min-height: 100vh;
@@ -8,14 +9,14 @@ main {
     align-items: center;
 }
 #board {
-    height: 50;
+    height: 50%;
     width: 20em;
     background-color: gray;
     display: flex;
     flex-wrap: wrap;
     box-sizing: border-box;
 }
-.tactoes {
+.tiles {
     height: 32.66%;
     width: 32.66%;
     text-align: center;
