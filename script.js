@@ -16,27 +16,11 @@ class Tile {
     }
 }
 
-const players = [{
-    color: 'red'
-}, {
-    color: 'blue'
-}]
-
-class GameManager{
-    constructor() {
-        this.currentPlayer = 0
+class PathManager{
+    constructor(playerName) {
+        this.playerName = playerName
         this.winner = null
-        this.tileStates = {
-            0: new Tile(0,0),
-            1: new Tile(0,1),
-            2: new Tile(0,2),
-            3: new Tile(1,0),
-            4: new Tile(1,1),
-            5: new Tile(1,2),
-            6: new Tile(2,0),
-            7: new Tile(2,1),
-            8: new Tile(2,2)
-        }
+        this.tileStates = {}
         this.moves = 0
         this.paths = {
             0: [[1,2],[3,6],[4,8]],
@@ -49,7 +33,6 @@ class GameManager{
             7: [[4,1]],
             8: [[5,2], [7,6], [4,0]]
         }
-        this.lastMove = null
     }
 
     increaseMoves() {
@@ -57,7 +40,8 @@ class GameManager{
     }
 
     checkForWinner(last) {
-        // if(this.moves < 5) return
+        if(this.moves < 5) return
+        
         //here find three in a row
         const winner = this.findThreeInARow(last)
         return winner
@@ -83,14 +67,38 @@ class GameManager{
             }
         })
     }
+}
 
+class GameManager {
+    constructor() {
+        this.player1 = new PathManager("Blue")
+        this.player2 = new PathManager("Red")
+        this.players = [this.player1, this.player2]
+        this.currentPlayerIndex = 0
+        this.currentPlayer = this.players[this.currentPlayerIndex]
+    }
+    
     nextPlayer() {
-        return Number(this.currentPlayer = !this.currentPlayer)
+        const nextIndex = Number(this.currentPlayerIndex = !this.currentPlayerIndex) 
+        const next = this.players[nextIndex]
+        this.currentPlayer = next
     }
 }
 
-const board = document.querySelector('#board')
-const ticTacToe = new GameManager()
+//this alternates between two players
+const y = new GameManager()
+console.log(y.currentPlayer);
+y.nextPlayer()
+console.log(y.currentPlayer);
+
+const players = [{
+    color: 'red'
+}, {
+    color: 'blue'
+}]
+
+const boardEl = document.querySelector('#board')
+const ticTacToe = new PathManager()
 const winnerEl = document.querySelector('#winner')
 
 //FUNCTIONS
@@ -98,11 +106,7 @@ function markTile(tile, color) {
     tile.setAttribute('style', `background-color: ${color};`)
 }
 
-// function nextPlayer() {
-//     return Number(currentPlayer = !currentPlayer)
-// }
-
-function handleClick(e) {
+function handleTileClick(e) {
     if(e.target.className !== 'tiles') return
     const tile = ticTacToe.tileStates[e.target.id]
     const takenTile = tile.take()
@@ -116,35 +120,34 @@ function handleClick(e) {
     if(winner) winnerEl.textContent = winner + '\n' + players[Number(ticTacToe.currentPlayer)].color
 }
 
-//EVENTS
-document.addEventListener('click', handleClick)
+
+/*EVENTS */
+document.addEventListener('click', handleTileClick)
 
 
-/*
-THOUGHTS:
-Use paths to win, if two players have same path to win then delete it
-to detect three in a row, think about filling up path to win, when filled p then player that filled it up wins
-*/
 
-
-//ENTRY POINT
+/*ENTRY POINT */
 
 //make board
 let counter = 0
-for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
+for (let row = 0; row < 3; row++) {
+    for (let col = 0; col < 3; col++) {
         //make tile
         const div = document.createElement("DIV")
         div.setAttribute("class", "tiles")
         div.setAttribute("id", `${counter}`)
+        const p = document.createElement('p')
+        p.textContent = `${counter}`
+        div.appendChild(p)
 
-        const h1 = document.createElement('H1')
-        h1.textContent = `${counter++}`
-        div.appendChild(h1)
-        board.appendChild(div)
+        //add tile to board
+        boardEl.appendChild(div)
+
+        //make tile state
+        ticTacToe.tileStates[counter] = new Tile(row, col)
+
+        counter++
     }
 }
-
-const pathsToWin = {
-    
-}
+let x = ticTacToe.tileStates
+console.log(x);

@@ -8,6 +8,10 @@ main {
     display: flex;
     align-items: center;
 }
+h1 {
+    margin: 0;
+    padding: 0;
+}
 #board {
     height: 50%;
     width: 20em;
