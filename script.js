@@ -67,6 +67,10 @@ class PathManager{
             }
         })
     }
+
+    nextPlayer() { //? take this out
+        return Number(this.currentPlayer = !this.currentPlayer) 
+    }
 }
 
 class GameManager {
@@ -85,37 +89,27 @@ class GameManager {
     }
 }
 
-//this alternates between two players
-const y = new GameManager()
-console.log(y.currentPlayer);
-y.nextPlayer()
-console.log(y.currentPlayer);
 
-const players = [{
-    color: 'red'
-}, {
-    color: 'blue'
-}]
+//could make this ...
+class BoardOnThePage {
+    constructor() {
 
-const boardEl = document.querySelector('#board')
-const ticTacToe = new PathManager()
-const winnerEl = document.querySelector('#winner')
+    }
+}
 
 //FUNCTIONS
 function markTile(tile, color) {
     tile.setAttribute('style', `background-color: ${color};`)
 }
 
-function handleTileClick(e) {
+function handleTileClick(e) { //TODO: use the right player
     if(e.target.className !== 'tiles') return
     const tile = ticTacToe.tileStates[e.target.id]
     const takenTile = tile.take()
     if(!takenTile) return
-    let player = ticTacToe.nextPlayer()
-    // console.log(player);
-    // console.log(tile);
-    markTile(e.target, players[player].color)
-    ticTacToe.increaseMoves()
+    let player = ticTacToe.nextPlayer() //change this to gamemanager.nextplayer()
+    markTile(e.target, players[player].color) //color will be in class
+    ticTacToe.increaseMoves() //this needs to go to 3 with two players
     const winner = ticTacToe.checkForWinner(e.target.textContent)
     if(winner) winnerEl.textContent = winner + '\n' + players[Number(ticTacToe.currentPlayer)].color
 }
@@ -128,26 +122,44 @@ document.addEventListener('click', handleTileClick)
 
 /*ENTRY POINT */
 
-//make board
-let counter = 0
-for (let row = 0; row < 3; row++) {
-    for (let col = 0; col < 3; col++) {
-        //make tile
-        const div = document.createElement("DIV")
-        div.setAttribute("class", "tiles")
-        div.setAttribute("id", `${counter}`)
-        const p = document.createElement('p')
-        p.textContent = `${counter}`
-        div.appendChild(p)
+//this alternates between two players
+const y = new GameManager()
+console.log(y.currentPlayer);
+y.nextPlayer()
+console.log(y.currentPlayer);
+//
 
-        //add tile to board
-        boardEl.appendChild(div)
+const players = [{ //put this in class
+    color: 'red'
+}, {
+    color: 'blue'
+}]
 
-        //make tile state
-        ticTacToe.tileStates[counter] = new Tile(row, col)
+const boardEl = document.querySelector('#board')
+const ticTacToe = new PathManager() //change this to game manager
+const winnerEl = document.querySelector('#winner')
 
-        counter++
+function start() {
+    //make board
+    let counter = 0
+    for (let row = 0; row < 3; row++) {
+        for (let col = 0; col < 3; col++) {
+            //make tile
+            const div = document.createElement("DIV")
+            div.setAttribute("class", "tiles")
+            div.setAttribute("id", `${counter}`)
+            const p = document.createElement('p')
+            p.textContent = `${counter}`
+            div.appendChild(p)
+
+            //add tile to board
+            boardEl.appendChild(div)
+
+            //make tile state <- do this for other player as well
+            ticTacToe.tileStates[counter] = new Tile(row, col)
+
+            counter++
+        }
     }
 }
-let x = ticTacToe.tileStates
-console.log(x);
+start()
