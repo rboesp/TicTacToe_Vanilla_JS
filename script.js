@@ -38,8 +38,8 @@ class GameManager{
             8: new Tile(2,2)
         }
         this.moves = 0
-        this.path = {2: 1, 5: 1, 8: 1}
-        this.pathScore = 0
+        this.paths = [[0,1,2],[2,5,8],[6,4,2]]
+        // this.pathScore = 0
     }
 
     increaseMoves() {
@@ -54,14 +54,18 @@ class GameManager{
     }
 
     findThreeInARow(last) {
-        if(this.path[`${last}`]) {
-            console.log('On path!');
-            this.pathScore++
-            console.log(this.pathScore);
-            if(this.pathScore === 3) {
-                return 'winner!'
-            }
-        }
+        this.paths.forEach(path => {
+            let count = 0
+            path.forEach(tile => {
+                if(this.tileStates[`${tile}`].taken) {
+                    count++
+                    console.log(count);
+                    if(count === 3) {
+                        console.log('winner');
+                    }
+                }
+            })
+        })
     }
 
     nextPlayer() {
@@ -88,8 +92,8 @@ function handleClick(e) {
     const takenTile = tile.take()
     if(!takenTile) return
     let player = ticTacToe.nextPlayer()
-    console.log(player);
-    console.log(tile);
+    // console.log(player);
+    // console.log(tile);
     markTile(e.target, players[player].color)
     ticTacToe.increaseMoves()
     const winner = ticTacToe.checkForWinner(e.target.textContent)
