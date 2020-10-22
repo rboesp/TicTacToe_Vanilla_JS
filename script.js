@@ -38,16 +38,30 @@ class GameManager{
             8: new Tile(2,2)
         }
         this.moves = 0
+        this.path = {2: 1, 5: 1, 8: 1}
+        this.pathScore = 0
     }
 
     increaseMoves() {
         this.moves++
     }
 
-    checkForWinner() {
-        if(this.moves < 5) return
+    checkForWinner(last) {
+        // if(this.moves < 5) return
         //here find three in a row
-        return 'blue wins!'
+        const winner = this.findThreeInARow(last)
+        return winner
+    }
+
+    findThreeInARow(last) {
+        if(this.path[`${last}`]) {
+            console.log('On path!');
+            this.pathScore++
+            console.log(this.pathScore);
+            if(this.pathScore === 3) {
+                return 'winner!'
+            }
+        }
     }
 
     nextPlayer() {
@@ -78,8 +92,8 @@ function handleClick(e) {
     console.log(tile);
     markTile(e.target, players[player].color)
     ticTacToe.increaseMoves()
-    const winner = ticTacToe.checkForWinner()
-    if(winner) winnerEl.textContent = winner
+    const winner = ticTacToe.checkForWinner(e.target.textContent)
+    if(winner) winnerEl.textContent = winner + '\n' + players[Number(ticTacToe.currentPlayer)].color
 }
 
 //EVENTS
