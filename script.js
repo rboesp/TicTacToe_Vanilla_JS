@@ -1,15 +1,13 @@
 class Tile {
     constructor(i, j) {
         this.i = i;
-        this.j = j;
+        this.j = j; //not sure if needed...
         this.taken = false;
     }
     take() {
-        if(!this.isTaken()){
-            this.taken = true
-            return true
-        }
-        return false
+        if(this.isTaken()) return false
+        this.taken = true
+        return true
     }
     isTaken() {
         return this.taken
@@ -17,12 +15,11 @@ class Tile {
 }
 
 class PathManager{
-    constructor(playerName) {
-        this.playerName = playerName
-        this.winner = null
+    constructor(playerColor) {
+        this.playerColor = playerColor
         this.tileStates = {}
         this.moves = 0
-        this.paths = { 
+        this.winningPaths = { 
             0: [[1,2],[3,6],[4,8]],
             1: [[4,7], [0,2]], 
             2: [[0,1],[5,8],[4,6]],
@@ -35,7 +32,7 @@ class PathManager{
         }
     }
 
-    increaseMoves() {
+    increaseMoveCount() {
         this.moves++
     }
 
@@ -47,31 +44,27 @@ class PathManager{
         return winner
     }
 
-    checkPath(path) {
-        let count = 0
+    findThreeInARow(lastTileChosen) {
+        const winningPathsIncludingLastTileChosen = this.winningPaths[`${lastTileChosen}`]
+        if(!winningPathsIncludingLastTileChosen) return
+        let winner = false
+        winningPathsIncludingLastTileChosen.forEach(path => {
+            const takenTileCountOnPath = this.countTakenTilesOnPath(path)
+            if(takenTileCountOnPath === 3) {
+                winner = ('Winner: ' + this.playerColor);
+            }
+        })
+        return winner
+    }
+
+    countTakenTilesOnPath(path) {
+        let count = 1 //the last one we chose, plus two more we find below to make three
         path.forEach(tile => {
-            if(this.tileStates[`${tile}`].taken) {
+            if(this.tileStates[`${tile}`].isTaken()) {
                 count++
             }
         })
         return count
-    }
-
-    findThreeInARow(last) {
-        const paths = this.paths[`${last}`]
-        if(!paths) return
-        let toReturn
-        paths.forEach(path => {
-            const result = this.checkPath(path)
-            if(result === 2) {
-                toReturn = ('Winner: ' + this.playerName);
-            }
-        })
-        return toReturn
-    }
-
-    nextPlayer() { //? take this out
-        return Number(this.currentPlayer = !this.currentPlayer) 
     }
 }
 
@@ -86,16 +79,19 @@ class GameManager {
     
     nextPlayer() {
         const nextIndex = Number(this.currentPlayerIndex = !this.currentPlayerIndex) 
-        const next = this.players[nextIndex]
-        this.currentPlayer = next
+        const nextPlayer = this.players[nextIndex]
+        this.currentPlayer = nextPlayer
     }
 }
 
 
-//could make this ...
 class BoardOnThePage {
     constructor() {
         this.tileStates = {}
+    }
+
+    markTile(tile, color) {
+        tile.setAttribute('style', `background-color: ${color};`)
     }
 
     clearBoard() {
@@ -108,25 +104,29 @@ class BoardOnThePage {
     }
 }
 
-//FUNCTIONS
-function markTile(tile, color) {
-    tile.setAttribute('style', `background-color: ${color};`)
-}
+const boardEl = document.querySelector('#board')
+const gameManager = new GameManager() 
+const ticTacToeBoard = new BoardOnThePage()
+const winnerEl = document.querySelector('#winner')
 
-function handleTileClick(e) { 
-    if(e.target.className !== 'tiles') return
-    const tileNumber = e.target.id
+
+/*FUNCTIONS*/
+
+//when user clicks on tile
+function handleTileClick(event) { 
+    if(event.target.className !== 'tiles') return
+    const tileNumber = event.target.id
 
     const player = gameManager.currentPlayer
     const playerTileState = player.tileStates[tileNumber]
-    const uiBoardTileState = uiBoard.tileStates[tileNumber]
+    const uiBoardTileState = ticTacToeBoard.tileStates[tileNumber]
     const playerTakenTile = playerTileState.take()
     const uiBoardTakenTile = uiBoardTileState.take()
     if(!playerTakenTile || !uiBoardTakenTile) return
 
-    markTile(e.target, players[Number(gameManager.currentPlayerIndex)].color) //color will be in class
-    player.increaseMoves() //this needs to go to 3 with two players
-    const winner = player.checkForWinningPath(e.target.textContent)
+    ticTacToeBoard.markTile(event.target, player.playerColor)
+    player.increaseMoveCount() 
+    const winner = player.checkForWinningPath(event.target.textContent)
 
     if(!winner) {
         gameManager.nextPlayer()
@@ -135,7 +135,7 @@ function handleTileClick(e) {
 
     //if here there is a winner
     winnerEl.textContent = winner;
-    uiBoard.clearBoard()
+    ticTacToeBoard.clearBoard()
 }
 
 
@@ -145,24 +145,6 @@ document.addEventListener('click', handleTileClick)
 
 
 /*ENTRY POINT */
-
-//this alternates between two players
-// const y = new GameManager()
-// console.log(y.currentPlayer);
-// y.nextPlayer()
-// console.log(y.currentPlayer);
-//
-
-const players = [ {
-    color: 'blue'
-},{ //put this in class
-    color: 'red'
-},]
-
-const boardEl = document.querySelector('#board')
-const gameManager = new GameManager() 
-const uiBoard = new BoardOnThePage()
-const winnerEl = document.querySelector('#winner')
 
 function start() {
     //make board
@@ -180,13 +162,12 @@ function start() {
             //add tile to board
             boardEl.appendChild(div)
 
-            //make tile state <- do this for other player as well
-            gameManager.players[0].tileStates[counter] = new Tile(row, col)
-            gameManager.players[1].tileStates[counter] = new Tile(row, col)
-            uiBoard.tileStates[counter] = new Tile(row, col)
+            //make tile states for both players and the board on the screen
+            gameManager.player1.tileStates[counter] = new Tile(row, col)
+            gameManager.player2.tileStates[counter] = new Tile(row, col)
+            ticTacToeBoard.tileStates[counter] = new Tile(row, col)
             counter++
         }
     }
 }
 start()
-// console.log(board);
