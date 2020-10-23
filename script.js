@@ -22,15 +22,15 @@ class PathManager{
         this.winner = null
         this.tileStates = {}
         this.moves = 0
-        this.paths = { //make a path class, takes in tuples
+        this.paths = { 
             0: [[1,2],[3,6],[4,8]],
-            1: [[4,7]], 
+            1: [[4,7], [0,2]], 
             2: [[0,1],[5,8],[4,6]],
-            3: [[4,5]],
+            3: [[4,5], [0,6]],
             4: [[2,6], [5,3],[1,7],[0,8]],
-            5: [[4,3]],
+            5: [[4,3], [2,8]],
             6: [[3,0],[7,8],[4,2]],
-            7: [[4,1]],
+            7: [[4,1], [6,8]],
             8: [[5,2], [7,6], [4,0]]
         }
     }
@@ -39,8 +39,8 @@ class PathManager{
         this.moves++
     }
 
-    checkForWinner(last) {
-        if(this.moves < 2) return
+    checkForWinningPath(last) {
+        if(this.moves < 3) return
         
         //here find three in a row
         const winner = this.findThreeInARow(last)
@@ -97,6 +97,15 @@ class BoardOnThePage {
     constructor() {
         this.tileStates = {}
     }
+
+    clearBoard() {
+        for (const key in this.tileStates) {
+            if (this.tileStates.hasOwnProperty(key)) {
+                const tile = this.tileStates[key];
+                tile.take()
+            }
+        }
+    }
 }
 
 //FUNCTIONS
@@ -106,21 +115,27 @@ function markTile(tile, color) {
 
 function handleTileClick(e) { 
     if(e.target.className !== 'tiles') return
+    const tileNumber = e.target.id
 
-    //TODO: use the right player
-    const player = ticTacToe.currentPlayer
-    console.log(player);
-    const tile = player.tileStates[e.target.id]
-    console.log(tile);
-    const takenTile = tile.take()
-    if(!takenTile) return
-    console.log(ticTacToe.currentPlayerIndex);
-    markTile(e.target, players[Number(ticTacToe.currentPlayerIndex)].color) //color will be in class
+    const player = gameManager.currentPlayer
+    const playerTileState = player.tileStates[tileNumber]
+    const uiBoardTileState = uiBoard.tileStates[tileNumber]
+    const playerTakenTile = playerTileState.take()
+    const uiBoardTakenTile = uiBoardTileState.take()
+    if(!playerTakenTile || !uiBoardTakenTile) return
+
+    markTile(e.target, players[Number(gameManager.currentPlayerIndex)].color) //color will be in class
     player.increaseMoves() //this needs to go to 3 with two players
-    const winner = player.checkForWinner(e.target.textContent)
-    console.log(winner);
-    if(winner) winnerEl.textContent = winner;
-    ticTacToe.nextPlayer()
+    const winner = player.checkForWinningPath(e.target.textContent)
+
+    if(!winner) {
+        gameManager.nextPlayer()
+        return
+    }
+
+    //if here there is a winner
+    winnerEl.textContent = winner;
+    uiBoard.clearBoard()
 }
 
 
@@ -145,8 +160,8 @@ const players = [ {
 },]
 
 const boardEl = document.querySelector('#board')
-const ticTacToe = new GameManager() 
-// const 
+const gameManager = new GameManager() 
+const uiBoard = new BoardOnThePage()
 const winnerEl = document.querySelector('#winner')
 
 function start() {
@@ -166,11 +181,12 @@ function start() {
             boardEl.appendChild(div)
 
             //make tile state <- do this for other player as well
-            ticTacToe.players[0].tileStates[counter] = new Tile(row, col)
-            ticTacToe.players[1].tileStates[counter] = new Tile(row, col)
+            gameManager.players[0].tileStates[counter] = new Tile(row, col)
+            gameManager.players[1].tileStates[counter] = new Tile(row, col)
+            uiBoard.tileStates[counter] = new Tile(row, col)
             counter++
         }
     }
 }
 start()
-console.log(ticTacToe);
+// console.log(board);
