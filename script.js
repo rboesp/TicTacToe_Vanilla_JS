@@ -81,6 +81,7 @@ class GameManager {
         const nextIndex = Number(this.currentPlayerIndex = !this.currentPlayerIndex) 
         const nextPlayer = this.players[nextIndex]
         this.currentPlayer = nextPlayer
+        return this.currentPlayer
     }
 }
 
@@ -112,6 +113,14 @@ const winnerEl = document.querySelector('#winner')
 
 /*FUNCTIONS*/
 
+const coms = '258'
+let count = 0
+function computerClick() {
+    let next = coms[count++]
+    let tile = document.getElementById(next)
+    tile.click()
+}
+
 //when user clicks on tile
 function handleTileClick(event) { 
     if(event.target.className !== 'tiles') return
@@ -129,7 +138,13 @@ function handleTileClick(event) {
     const winner = player.checkForWinningPath(event.target.textContent)
 
     if(!winner) {
-        gameManager.nextPlayer()
+        let nextPlayer = gameManager.nextPlayer()
+        if(nextPlayer.playerColor === 'Red') {
+            computerClick()
+
+        }
+
+
         return
     }
 
