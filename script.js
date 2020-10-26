@@ -1,7 +1,6 @@
 class Tile {
-    constructor(i, j) {
-        this.i = i;
-        this.j = j; //not sure if needed...
+    constructor(val) {
+        this.val = val
         this.taken = false;
     }
     take() {
@@ -115,8 +114,8 @@ const winnerEl = document.querySelector('#winner')
 
 const coms = '258'
 let count = 0
-function computerClick() {
-    let next = coms[count++]
+function computerClick(next) {
+    // let next = coms[count++]
     let tile = document.getElementById(next)
     tile.click()
 }
@@ -129,22 +128,51 @@ function handleTileClick(event) {
     const player = gameManager.currentPlayer
     const playerTileState = player.tileStates[tileNumber]
     const uiBoardTileState = ticTacToeBoard.tileStates[tileNumber]
-    const playerTakenTile = playerTileState.take()
+    const playerTakenTile = playerTileState.take() //taken here means "own this"
     const uiBoardTakenTile = uiBoardTileState.take()
     if(!playerTakenTile || !uiBoardTakenTile) return
 
     ticTacToeBoard.markTile(event.target, player.playerColor)
     player.increaseMoveCount() 
-    const winner = player.checkForWinningPath(event.target.textContent)
+    const winner = player.checkForWinningPath(event.target.textContent) //use id of el
 
     if(!winner) {
         let nextPlayer = gameManager.nextPlayer()
-        if(nextPlayer.playerColor === 'Red') {
-            computerClick()
 
+        /*
+            TODO: Change so the logs say whether tile is taken
+            by red or blue. Change taken to be a three part-thing:
+            either it is taken, owned, or available This naturally
+            replacs a loop below and will allow to see which ones are good
+            to own and make it so an AI can be made around it
+        */
+
+        //mark blue tile
+        nextPlayer.tileStates[tileNumber].take() //taken here means "someone took this"
+
+        //here get next tile
+        // let next = nextPlayer.winningPaths[`${0}`][0][0]
+        // console.log(next);
+        // let taken = nextPlayer.tileStates[`${0}`].taken
+        // if(!taken) computerClick(next)
+        console.clear()
+        for (const key in nextPlayer.tileStates) {
+            if (nextPlayer.tileStates.hasOwnProperty(key)) {
+                const element = nextPlayer.tileStates[key];
+                if(element.taken) {
+                    console.log(`${element.val} is taken`);
+                }
+            }
         }
-
-
+        console.log('**************');
+        for (const key in nextPlayer.tileStates) {
+            if (nextPlayer.tileStates.hasOwnProperty(key)) {
+                const element = nextPlayer.tileStates[key];
+                if(!element.taken) {
+                    console.log(`${element.val} is not taken`);
+                }
+            }
+        }
         return
     }
 
@@ -178,9 +206,9 @@ function start() {
             boardEl.appendChild(div)
 
             //make tile states for both players and the board on the screen
-            gameManager.player1.tileStates[counter] = new Tile(row, col)
-            gameManager.player2.tileStates[counter] = new Tile(row, col)
-            ticTacToeBoard.tileStates[counter] = new Tile(row, col)
+            gameManager.player1.tileStates[counter] = new Tile(counter)
+            gameManager.player2.tileStates[counter] = new Tile(counter)
+            ticTacToeBoard.tileStates[counter] = new Tile(counter)
             counter++
         }
     }
