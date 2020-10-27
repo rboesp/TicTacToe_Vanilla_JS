@@ -2,10 +2,11 @@ class Tile {
     constructor(val) {
         this.val = val
         this.taken = "Available";
-        this.options = ['owned', "taken"]
+        this.options = ['owned', "taken", "off"]
     }
     labelTile(option) {
         if(this.tileStatus() === this.options[1]) return
+        if(this.tileStatus() === this.options[2]) return
         this.taken = option
         return true
     }
@@ -60,11 +61,43 @@ class PathManager{
     countTakenTilesOnPath(path) {
         let count = 1 //the last one we chose, plus two more we find below to make three
         path.forEach(tile => {
-            if(this.tileStates[`${tile}`].isTaken()) {
+            if(this.tileStates[`${tile}`].tileStatus() === 'owned') {
                 count++
             }
         })
         return count
+    }
+
+    check(number) {
+        let toReturn = false
+        for (const key in this.winningPaths) {
+            if (this.winningPaths.hasOwnProperty(key)) {
+                const element = this.winningPaths[key];
+                element.forEach(path => {
+                    let count = 0
+                    path.forEach(tileNumber => {
+                        if(this.tileStates[tileNumber].taken === "owned") {
+                            count++
+                            console.log("*****" + this.tileStates[tileNumber].taken);
+                            if(count === number && this.tileStates[key].taken !== "taken") {
+                                console.log(tileNumber, count);
+                                console.log(key, path);
+                                toReturn = key
+                            }
+                        }
+                    })
+                })
+            }
+        }
+        return toReturn
+    }
+
+    findNextTile() {
+        let check = this.check(2)
+        if(check) return check
+        check = this.check(1) //this makes it very dumb lol
+        if(check) return check
+        return 'not sure yet!'
     }
 }
 
@@ -95,11 +128,11 @@ class BoardOnThePage {
         tile.setAttribute('style', `background-color: ${color};`)
     }
 
-    clearBoard() {
+    turnOff() {
         for (const key in this.tileStates) {
             if (this.tileStates.hasOwnProperty(key)) {
                 const tile = this.tileStates[key];
-                tile.take("owned")
+                tile.labelTile("off")
             }
         }
     }
@@ -140,48 +173,26 @@ function handleTileClick(event) {
     if(!winner) {
         let nextPlayer = gameManager.nextPlayer()
 
-        /*
-            TODO: Change so the logs say whether tile is taken
-            by red or blue. Change taken to be a three part-thing:
-            either it is taken, owned, or available This naturally
-            replacs a loop below and will allow to see which ones are good
-            to own and make it so an AI can be made around it
-        */
-
         //mark blue tile
         nextPlayer.tileStates[tileNumber].labelTile("taken") //taken here means "someone took this and you cannot pick it"
 
-        //here get next tile
-        // let next = nextPlayer.winningPaths[`${0}`][0][0]
-        // console.log(next);
-        // let taken = nextPlayer.tileStates[`${0}`].taken
-        // if(!taken) computerClick(next)
         console.clear()
         console.log(player.playerColor);
         console.log(player.tileStates);
-        // for (const key in player.tileStates) {
-        //     if (player.tileStates.hasOwnProperty(key)) {
-        //         const element = player.tileStates[key];
-        //         console.log(element);
-        //     }
-        // }
         console.log('**************');
         console.log(nextPlayer.playerColor);
         console.log(nextPlayer.tileStates);
-        // for (const key in nextPlayer.tileStates) {
-        //     if (nextPlayer.tileStates.hasOwnProperty(key)) {
-        //         const element = nextPlayer.tileStates[key];
-        //         if(!element.taken) {
-        //             console.log(`${element.val} is not taken`);
-        //         }
-        //     }
-        // }
+
+        //here find next tile for next player if computer player
+        const next = nextPlayer.findNextTile()
+        console.log(`Hey ${nextPlayer.playerColor}, next tile is: ${next} next!`);
+        // computerClick(next)
         return
     }
 
     //if here there is a winner
     winnerEl.textContent = winner;
-    ticTacToeBoard.clearBoard()
+    ticTacToeBoard.turnOff()
 }
 
 
