@@ -1,14 +1,15 @@
 class Tile {
     constructor(val) {
         this.val = val
-        this.taken = false;
+        this.taken = "Available";
+        this.options = ['owned', "taken"]
     }
-    take() {
-        if(this.isTaken()) return false
-        this.taken = true
+    labelTile(option) {
+        if(this.tileStatus() === this.options[1]) return
+        this.taken = option
         return true
     }
-    isTaken() {
+    tileStatus() {
         return this.taken
     }
 }
@@ -98,7 +99,7 @@ class BoardOnThePage {
         for (const key in this.tileStates) {
             if (this.tileStates.hasOwnProperty(key)) {
                 const tile = this.tileStates[key];
-                tile.take()
+                tile.take("owned")
             }
         }
     }
@@ -128,8 +129,8 @@ function handleTileClick(event) {
     const player = gameManager.currentPlayer
     const playerTileState = player.tileStates[tileNumber]
     const uiBoardTileState = ticTacToeBoard.tileStates[tileNumber]
-    const playerTakenTile = playerTileState.take() //taken here means "own this"
-    const uiBoardTakenTile = uiBoardTileState.take()
+    const playerTakenTile = playerTileState.labelTile("owned") //owned here means "this player picked this tile"
+    const uiBoardTakenTile = uiBoardTileState.labelTile("taken") //taken here means "this tile has been picked marked and cannot be picked again"
     if(!playerTakenTile || !uiBoardTakenTile) return
 
     ticTacToeBoard.markTile(event.target, player.playerColor)
@@ -148,7 +149,7 @@ function handleTileClick(event) {
         */
 
         //mark blue tile
-        nextPlayer.tileStates[tileNumber].take() //taken here means "someone took this"
+        nextPlayer.tileStates[tileNumber].labelTile("taken") //taken here means "someone took this and you cannot pick it"
 
         //here get next tile
         // let next = nextPlayer.winningPaths[`${0}`][0][0]
@@ -156,23 +157,25 @@ function handleTileClick(event) {
         // let taken = nextPlayer.tileStates[`${0}`].taken
         // if(!taken) computerClick(next)
         console.clear()
-        for (const key in nextPlayer.tileStates) {
-            if (nextPlayer.tileStates.hasOwnProperty(key)) {
-                const element = nextPlayer.tileStates[key];
-                if(element.taken) {
-                    console.log(`${element.val} is taken`);
-                }
-            }
-        }
+        console.log(player.playerColor);
+        console.log(player.tileStates);
+        // for (const key in player.tileStates) {
+        //     if (player.tileStates.hasOwnProperty(key)) {
+        //         const element = player.tileStates[key];
+        //         console.log(element);
+        //     }
+        // }
         console.log('**************');
-        for (const key in nextPlayer.tileStates) {
-            if (nextPlayer.tileStates.hasOwnProperty(key)) {
-                const element = nextPlayer.tileStates[key];
-                if(!element.taken) {
-                    console.log(`${element.val} is not taken`);
-                }
-            }
-        }
+        console.log(nextPlayer.playerColor);
+        console.log(nextPlayer.tileStates);
+        // for (const key in nextPlayer.tileStates) {
+        //     if (nextPlayer.tileStates.hasOwnProperty(key)) {
+        //         const element = nextPlayer.tileStates[key];
+        //         if(!element.taken) {
+        //             console.log(`${element.val} is not taken`);
+        //         }
+        //     }
+        // }
         return
     }
 
