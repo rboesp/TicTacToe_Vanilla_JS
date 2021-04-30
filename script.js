@@ -1,17 +1,17 @@
-class Tile {
+class Tile { //what's going on in here is odd... will be changed
     constructor(val) {
         this.val = val
-        this.taken = "available";
-        this.options = ['owned', "taken", "off"]
+        this.ownershipStatus = "available";
+        this.options = ['owned', "taken", "off"] 
     }
-    labelTile(option) {
+    labelTile(option) { 
         if(this.tileStatus() === this.options[1]) return
         if(this.tileStatus() === this.options[2]) return
-        this.taken = option
+        this.ownershipStatus = option
         return true
     }
     tileStatus() {
-        return this.taken
+        return this.ownershipStatus
     }
 }
 
@@ -21,17 +21,26 @@ class PathManager{
         this.tileStates = {}
         this.moves = 0
         this.winningPaths = { 
-            
-            6: [[3,0],[7,8],[4,2]],
-            7: [[4,1], [6,8]],
-            8: [[5,2], [7,6], [4,0]],
-            3: [[4,5], [0,6]],
             0: [[1,2],[3,6],[4,8]],
             1: [[4,7], [0,2]], 
             2: [[0,1],[5,8],[4,6]],
+            3: [[4,5], [0,6]],
+            4: [[2,6], [5,3],[1,7],[0,8]], 
             5: [[4,3], [2,8]],
-            4: [[2,6], [5,3],[1,7],[0,8]], //mixed it manually
-            
+            6: [[3,0],[7,8],[4,2]],
+            7: [[4,1], [6,8]],
+            8: [[5,2], [7,6], [4,0]]
+        }
+        this.tileCounts = {
+            0: 7,
+            1: 5,
+            2: 7,
+            3: 5,
+            4: 9,
+            5: 5,
+            6: 7,
+            7: 5,
+            8: 7,
         }
     }
 
@@ -86,28 +95,32 @@ class PathManager{
         let toReturn = false
         for (const key in this.winningPaths) {
             // if (this.winningPaths.hasOwnProperty(key)) {
-        // const element = this.winningPaths[key];
-        const element = this.randomProperty(this.winningPaths)
-        const key = this.getKeyByValue(this.winningPaths, element)
-        element.forEach(path => {
-            let count = 0
-            path.forEach(tileNumber => {
-                console.log(this.tileStates[tileNumber].taken);
-                if(!number && this.tileStates[tileNumber].taken === "available") {
-                    console.log('pick em');
-                    toReturn = tileNumber
-                }
-                else if(this.tileStates[tileNumber].taken === "owned") {
-                    count++
-                    console.log("*****" + this.tileStates[tileNumber].taken);
-                    if(count === number && this.tileStates[key].taken === "available") {
-                        console.log(tileNumber, count);
-                        console.log(key, path);
-                        toReturn = key
+            // const element = this.winningPaths[key];
+
+            //get random property from object and the key that belongs to it
+            const element = this.randomProperty(this.winningPaths)
+            const key = this.getKeyByValue(this.winningPaths, element)
+
+            //go thorugh the properties (from random obj above)
+            element.forEach(path => { //change this to traditional for-loop so we can return right away - may make AI smarter...
+                let ownedTileCount = 0
+                path.forEach(tileNumber => { //and here too (above)
+                    // console.log(this.tileStates[tileNumber].ownershipStatus);
+                    if(!number && this.tileStates[tileNumber].ownershipStatus === "available") {
+                        // console.log('pick em');
+                        toReturn = tileNumber
                     }
-                }
+                    else if(this.tileStates[tileNumber].ownershipStatus === "owned") {
+                        ownedTileCount++
+                        // console.log("*****" + this.tileStates[tileNumber].ownershipStatus);
+                        if(ownedTileCount === number && this.tileStates[key].ownershipStatus === "available") {
+                            // console.log(tileNumber, ownedTileCount);
+                            // console.log(key, path);
+                            toReturn = key
+                        }
+                    }
+                })
             })
-        })
             // }
         }
         return toReturn
@@ -120,6 +133,14 @@ class PathManager{
         check = this.mediumDumbAI_nextMove(1) 
         if(check) return check
         return this.mediumDumbAI_nextMove(0)
+        // let max = 0 //this is a dumb_AI
+        // for (const key in this.tileCounts) {
+        //     if (this.tileCounts.hasOwnProperty(key)) {
+        //         const element = this.tileCounts[key];
+        //         if(element > max) max = key
+        //     }
+        // }
+        // return max
     }
 }
 
@@ -190,6 +211,7 @@ function handleTileClick(event) {
 
     ticTacToeBoard.markTile(event.target, player.playerColor)
     player.increaseMoveCount() 
+    delete player.tileCounts[`${tileNumber}`]
     const winner = player.checkForWinningPath(event.target.textContent) //use id of el
 
     if(winner) {   
@@ -200,21 +222,24 @@ function handleTileClick(event) {
 
     let nextPlayer = gameManager.nextPlayer()
     // console.log(nextPlayer.playerColor);
-    if(nextPlayer.playerColor === 'Red') {
+    if(nextPlayer.playerColor === 'Red') { //this means red always plays blue as player 2, and thus blue is player 1
         console.log('Red is next');
         //mark blue tile
         nextPlayer.tileStates[tileNumber].labelTile("taken") //taken here means "someone took this and you cannot pick it"
+        console.log(tileNumber);
+        delete nextPlayer.tileCounts[`${tileNumber}`] //blah lool!
+        console.log(nextPlayer.tileCounts);
 
-        console.clear()
-        console.log(player.playerColor);
-        console.log(player.tileStates);
-        console.log('**************');
-        console.log(nextPlayer.playerColor);
-        console.log(nextPlayer.tileStates);
+        // console.clear()
+        // console.log(player.playerColor);
+        // console.log(player.tileStates);
+        // console.log('**************');
+        // console.log(nextPlayer.playerColor);
+        // console.log(nextPlayer.tileStates);
 
         //here find next tile for next player if computer player
         const next = nextPlayer.findNextTile()
-        console.log(`Player ${nextPlayer.playerColor} is playing tile ${next} next!`);
+        // console.log(`Player ${nextPlayer.playerColor} is playing tile ${next} next!`);
         computerClick(next)
     }
 }
